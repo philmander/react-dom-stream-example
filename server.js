@@ -3,7 +3,9 @@ import compression from "compression";
 
 import React from "react";
 import ReactDOM from "react/dist/react.min";
-import ReactDOMStream from "react-dom-stream/server";
+import { renderToString } from 'preact-render-string';
+//import ReactDOMStream from "react-dom-stream/server";
+import { renderToStream } from 'preact-render-to-string';
 
 import RecursiveDivs from "./RecursiveDivs";
 import DynamicRecursiveDivs from "./DynamicRecursiveDivs";
@@ -15,13 +17,13 @@ var app = express();
 app.use('/static', express.static('static'));
 
 // =========== raw responses ==============
-// these responses (/string and /stream) just read out from ReactDOM and ReactDOMStream to make it easy to measure 
+// these responses (/string and /stream) just read out from ReactDOM and ReactDOMStream to make it easy to measure
 // TTFB and TTLB. If you want to have a fully functional, connected React page, use /stringClient or /streamClient.
 
 app.get('/string', (req, res) => {
   var {depth = 1, breadth = 1} = req.query;
 
-  res.write(ReactDOM.renderToString(<RecursiveDivs depth={depth} breadth={breadth}/>));
+  res.write(renderToString(<RecursiveDivs depth={depth} breadth={breadth}/>));
   res.end();
 });
 
@@ -31,7 +33,7 @@ app.get('/stream', async function (req, res) {
   // var hash = await ReactDOMStream.renderToString(<RecursiveDivs depth={depth} breadth={breadth}/>, res, {bufferSize: 10000});
   // res.end();
 
-  ReactDOMStream.renderToString(<RecursiveDivs depth={depth} breadth={breadth}/>).pipe(res);
+  renderToStream(<RecursiveDivs depth={depth} breadth={breadth}/>).pipe(res);
 });
 
 // =========== client-rendered responses ==========

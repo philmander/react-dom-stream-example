@@ -10,7 +10,7 @@ const argv = yargs
 			describe: "the maximum depth of tree to test"
 		},
 		"b" : {
-			alias:"breadth", 
+			alias:"breadth",
 			default: 2,
 			describe: "the branching breadth of the tree"
 		},
@@ -33,18 +33,20 @@ async function main() {
 	const stringResults = await getSamples(argv.h, "string", argv.d, argv.b, argv.i);
 	const streamResults = await getSamples(argv.h, "stream", argv.d, argv.b, argv.i);
 
-	console.log(`\n\nResults`);
+	const D = ',';
 
-	console.log("Depth\tStream Size\tStream TTFB\tStream TTLB\tStringSize\tString TTFB\tString TTLB\tSize Diff\tTTFB Diff\tTTLB Diff");
+	console.log(`\n\nResults`)
+
+	console.log(`Depth${D}Stream Size${D}Stream TTFB${D}Stream TTLB${D}StringSize${D}String TTFB${D}String TTLB${D}Size Diff${D}TTFB Diff${D}TTLB Diff`);
 	for (let depth = 1; depth <= argv.d; depth++) {
 		let ttfbDiff = (streamResults[depth].ttfb - stringResults[depth].ttfb) / stringResults[depth].ttfb;
 		let ttlbDiff = (streamResults[depth].ttlb - stringResults[depth].ttlb) / stringResults[depth].ttlb;
 		let sizeDiff = (streamResults[depth].size - stringResults[depth].size) / stringResults[depth].size;
 		console.log(
-			`${depth}\t` +
-			`${Math.round10(streamResults[depth].size, 0)}\t${Math.round10(streamResults[depth].ttfb *1000, -1)}\t${Math.round10(streamResults[depth].ttlb * 1000, -1)}\t` +
-			`${Math.round10(stringResults[depth].size, 0)}\t${Math.round10(stringResults[depth].ttfb *1000, -1)}\t${Math.round10(stringResults[depth].ttlb * 1000, -1)}\t` +
-			`${Math.round10(sizeDiff * 100, -1)}%\t${Math.round10(ttfbDiff * 100, -1)}%\t${Math.round10(ttlbDiff * 100, -1)}%`
+			`${depth}${D}` +
+			`${Math.round10(streamResults[depth].size, 0)}${D}${Math.round10(streamResults[depth].ttfb *1000, -1)}${D}${Math.round10(streamResults[depth].ttlb * 1000, -1)}${D}` +
+			`${Math.round10(stringResults[depth].size, 0)}${D}${Math.round10(stringResults[depth].ttfb *1000, -1)}${D}${Math.round10(stringResults[depth].ttlb * 1000, -1)}${D}` +
+			`${Math.round10(sizeDiff * 100, -1)}%${D}${Math.round10(ttfbDiff * 100, -1)}%${D}${Math.round10(ttlbDiff * 100, -1)}%`
 			);
 	}
 }
@@ -88,10 +90,11 @@ const executeCurl = (host, path, depth, breadth) => {
 		  	reject(error);
 		  }
 		  const output = stdout.toString();
-		  const statsLine = output; //stdout.slice(stdout.lastIndexOf("\n") + 1);
+		  // my european console is formatting the numbers
+		  const statsLine = output.replace(/,/g, '.'); //stdout.slice(stdout.lastIndexOf("\n") + 1);
 		  const [preTransfer, startTransfer, total, sizeDownload] = statsLine.split(" ");
 		  resolve({
-		  	ttfb: (startTransfer - preTransfer), 
+		  	ttfb: (startTransfer - preTransfer),
 		  	ttlb: (total - preTransfer),
 		  	size: parseInt(sizeDownload)
 		  });
